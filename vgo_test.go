@@ -21,3 +21,23 @@ Date:   Fri Feb 23 15:02:38 2018 +0800
 	dt := date.FindStringSubmatch(log1)
 	fmt.Println(dt)
 }
+
+func TestRepo(t *testing.T) {
+	args := []string{
+		"toukii/goutils:dev@1eb9",
+		"toukii/goutils",
+		"toukii/goutils:dev",
+		"toukii/goutils@1eb9",
+		"toukii/goutils:",
+		"toukii/goutils@",
+		"toukii/goutils:@",
+	}
+
+	for _, it := range args {
+		user := userRegx.FindStringSubmatch(it)
+		repo := repoRegx.FindStringSubmatch(it)
+		branch := branchRegx.FindStringSubmatch(it)
+		commitSha := commitShaRegx.FindStringSubmatch(it)
+		fmt.Printf("%s \n  user:%+v\n  repo:%+v\n  branch:%+v\n  commit:%+v\n", it, user, repo, branch, commitSha)
+	}
+}

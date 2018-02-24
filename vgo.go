@@ -7,7 +7,6 @@ import (
 
 	"github.com/astaxie/beego/httplib"
 	"github.com/everfore/exc"
-
 	"github.com/toukii/goutils"
 	"github.com/toukii/jsnm"
 )
@@ -35,20 +34,30 @@ func (r *Repo) Require() string {
 	return fmt.Sprintf(tagFmt, r.User, r.Name, r.Tag())
 }
 
+/*
+commit非空，获取commit的tag；
+branch非空，获取branch的最新提交；
+branch为空，先获取tag；没有tag，获取master最新提交；没有master；获取最近提交；
+*/
 func (r *Repo) Tag() string {
-	tag, err := r.LatestTag()
-	if err != nil {
-		if r.Commit != "" {
-			tag, err = r.CommitTag()
-		}
+	var tag string
+	var err error
+	if r.Commit != "" {
+		tag, err = r.CommitTag()
 		if err == nil {
 			return tag
+		} else {
+			return ""
 		}
-		fmt.Println(err)
-		tag, err = r.LatestBranchCommit()
-		if err != nil {
-			return "latest"
-		}
+	}
+	if r.Branch == "" {
+		tag, err = r.LatestTag()
+		r.Branch = "master"
+	} else {
+		tag, err = r.LocalLatestBranchCommit()
+	}
+	if tag == "" {
+		return "latest"
 	}
 	return tag
 }
@@ -82,9 +91,10 @@ func (r *Repo) LatestTag() (string, error) {
 	return tag, nil
 }
 
-func (r *Repo) LatestBranchCommit() (string, error) {
+func (r *Repo) LocalLatestBranchCommit() (string, error) {
 	bs, err := exc.NewCMD(fmt.Sprintf("git log %s -1", r.Branch)).Env("GOPATH").Cd("src/github.com/").Cd(r.User).Cd(r.Name).Do()
-	if goutils.CheckErr(err) {
+	if err != nil {
+		fmt.Printf("%s,%+v\n", bs, err)
 		return "", err
 	}
 	log1 := goutils.ToString(bs)

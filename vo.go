@@ -2,6 +2,7 @@ package vo
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -12,11 +13,20 @@ var (
 	Command = &cobra.Command{
 		Use:   "vo",
 		Short: "get version of go file from github",
-		Long:  `vo toukii/goutils:dev -e v0.1.1v0.1.0v0.0.1v0.1`,
+		Long: `vo user/repo[:branch][@commit]
+ex: 
+vo toukii/goutils:dev -e v0.1.1v0.1.0v0.0.1v0.1`,
 		Run: func(cmd *cobra.Command, args []string) {
-			Excute(args)
+			if err := Excute(args); err != nil {
+				fmt.Println(err)
+			}
 		},
 	}
+
+	userRegx      = regexp.MustCompile("(\\S+)/")
+	repoRegx      = regexp.MustCompile("/(\\S+?)(:|@|$)") // ? 非贪婪
+	branchRegx    = regexp.MustCompile(":(\\S+?)(@|$)")
+	commitShaRegx = regexp.MustCompile("@(\\S+)")
 )
 
 func init() {
@@ -25,24 +35,24 @@ func init() {
 }
 
 func ParseRepo(repoStr string) *Repo {
-	repo := &Repo{Exclude: make(map[string]bool)}
-	inputs := strings.Split(repoStr, "/")
-	repo.User = inputs[0]
-	input_1 := inputs[1]
 
-	if strings.Contains(input_1, ":") {
-		input_1s := strings.Split(input_1, ":")
-		repo.Name = input_1s[0]
-		repo.Branch = input_1s[1]
-	} else {
-		if strings.Contains(input_1, "@") {
-			input_1s := strings.Split(input_1, "@")
-			repo.Name = input_1s[0]
-			repo.Commit = input_1s[1]
-		} else {
-			repo.Name = input_1
-			repo.Branch = "master"
-		}
+	user := userRegx.FindStringSubmatch(repoStr)
+	repo := repoRegx.FindStringSubmatch(repoStr)
+	branch := branchRegx.FindStringSubmatch(repoStr)
+	commitSha := commitShaRegx.FindStringSubmatch(repoStr)
+
+	if len(branch) < 2 {
+		branch = []string{"", ""}
+	}
+	if len(commitSha) < 2 {
+		commitSha = []string{"", ""}
+	}
+	r := &Repo{
+		User:    user[1],
+		Name:    repo[1],
+		Branch:  branch[1],
+		Commit:  commitSha[1],
+		Exclude: make(map[string]bool),
 	}
 
 	exclude := viper.GetString("exclude")
@@ -51,17 +61,18 @@ func ParseRepo(repoStr string) *Repo {
 		if exc == "" {
 			continue
 		}
-		repo.Exclude["v"+exc] = true
+		r.Exclude["v"+exc] = true
 	}
-
-	fmt.Printf("%+v\n", repo)
-	return repo
+	return r
 }
 
 func Excute(args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf("repo is required.")
+	}
 	repoStr := args[0]
 	if !strings.Contains(repoStr, "/") {
-		tips := "[user/]repo[:branch]  > $"
+		tips := "user/repo[:branch][@commit]  > $"
 		fmt.Print(tips)
 		fmt.Scanf("%s", &repoStr)
 	}
