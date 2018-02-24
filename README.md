@@ -10,6 +10,9 @@ go get -u github.com/toukii/vo/vo
 
 ## usage
 
+__vo user/repo[:branch][@commit]__
+
+
 ```
 vo toukii/vo
 "github.com/toukii/vo" v0.0.1
