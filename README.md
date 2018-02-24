@@ -11,6 +11,8 @@ go get -u github.com/toukii/vo/vo
 ## usage
 
 ```
+vo toukii/vo
+"github.com/toukii/vo" v0.0.1
 vo toukii/vo:dev
 "github.com/toukii/vo" v0.0.0-20180224151534-5f08cd478e56                                                                             
 vo toukii/vo:master
