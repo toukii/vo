@@ -13,11 +13,17 @@ import (
 )
 
 type Repo struct {
+	Raw     string
+	rawUser string
+	rawRepo string
+
 	User    string
-	Name    string // repo name
 	Repo    string
+	Name    string // repo name
 	Branch  string
 	Commit  string
+	Version string
+
 	Exclude map[string]bool
 }
 
@@ -29,13 +35,13 @@ var (
 	commitFmtUrl     = "https://api.github.com/repos/%s/%s/commits/%s?access_token=%s"
 	branchLogdateFmt = "Mon Jan 2 15:04:05 2006 -0700"
 	branchApidateFmt = "2006-01-02T15:04:05Z"
-	tagFmt           = "\"github.com/%s/%s\" %s"
+	tagFmt           = "\"%s\" %s"
 
 	TOKEN = ""
 )
 
 func (r *Repo) Require() string {
-	return fmt.Sprintf(tagFmt, r.User, r.Name, r.Tag())
+	return fmt.Sprintf(tagFmt, r.Name, r.Tag())
 }
 
 /*
@@ -51,26 +57,26 @@ func (r *Repo) Tag() string {
 		if err == nil {
 			return tag
 		} else {
-			fmt.Println(err)
+			fmt.Println(r.Name, err)
 			return ""
 		}
 	}
 	if r.Branch == "" {
 		tag, err = r.LatestTag()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(r.Name, err)
 		}
 		if tag == "" {
 			r.Branch = "master"
 			tag, err = r.LocalLatestBranchCommit()
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println(r.Name, err)
 			}
 		}
 	} else {
 		tag, err = r.LocalLatestBranchCommit()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(r.Name, err)
 		}
 	}
 	if tag == "" {
@@ -80,6 +86,9 @@ func (r *Repo) Tag() string {
 }
 
 func (r *Repo) LatestTag() (string, error) {
+	if strings.Contains(r.User, "golang.org") {
+		return "", fmt.Errorf("Tag api is not supported for golang.org")
+	}
 	req := httplib.NewBeegoRequest(fmt.Sprintf(tagFmtUrl, r.User, r.Repo, TOKEN), "GET")
 	bs, err := req.Bytes()
 	if err != nil {
@@ -95,27 +104,30 @@ func (r *Repo) LatestTag() (string, error) {
 	jsnm.BytesFmt(bs).Range(func(i int, ji *jsnm.Jsnm) bool {
 		tagTmp := ji.Get("name").RawData().String()
 		if len(r.Exclude) > 0 {
-			if _, ex := r.Exclude[tagTmp]; !ex {
+			if _, ex := r.Exclude[tagTmp]; !ex && strings.HasPrefix(tagTmp, r.Version) {
 				tag = tagTmp
 				return true
 			}
-		} else {
+		} else if strings.HasPrefix(tagTmp, r.Version) {
 			tag = tagTmp
 			return true
 		}
 		return false
 	})
 	if tag == "" {
-		return "", fmt.Errorf("no wanted tag.")
+		return "", fmt.Errorf("No wanted tag.")
 	}
 	return tag, nil
 }
 
 func (r *Repo) LocalLatestBranchCommit() (string, error) {
-	if strings.Contains(r.User, "golang.org") || strings.Contains(r.User, "gopkg.in") {
-		return "", fmt.Errorf("be not supported.")
+	glog := exc.NewCMD(fmt.Sprintf("git log %s -1", r.Branch)).Env("GOPATH")
+	if strings.Contains(r.User, "golang.org") {
+		glog.Env("GOPATH").Cd("src").Cd(r.Name)
+	} else {
+		glog = glog.Cd("src/github.com/").Cd(r.User).Cd(r.Repo)
 	}
-	bs, err := exc.NewCMD(fmt.Sprintf("git log %s -1", r.Branch)).Env("GOPATH").Cd("src/github.com/").Cd(r.User).Cd(r.Repo).Do()
+	bs, err := glog.Do()
 	if err != nil {
 		fmt.Printf("%s,%+v\n", bs, err)
 		return "", err
@@ -141,6 +153,9 @@ func (r *Repo) LocalLatestBranchCommit() (string, error) {
 }
 
 func (r *Repo) CommitTag() (string, error) {
+	if strings.Contains(r.User, "golang.org") {
+		return "", fmt.Errorf("Api commits not supported for golang.org")
+	}
 	req := httplib.NewBeegoRequest(fmt.Sprintf(commitFmtUrl, r.User, r.Repo, r.Commit, TOKEN), "GET")
 	bs, err := req.Bytes()
 	if err != nil {

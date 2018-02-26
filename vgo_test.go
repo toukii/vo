@@ -2,6 +2,7 @@ package vo
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"testing"
 )
@@ -32,7 +33,27 @@ func TestRepo(t *testing.T) {
 		"toukii/goutils@",
 		"toukii/goutils:@",
 		"everfore/exc/walkexc/pkg",
-		"toukii/vo/vo",
+		"gopkg.in/pkg.v3",
+		"gopkg.in/user/pkg.v3",
+	}
+
+	exp := []*Repo{
+		&Repo{
+			Raw:     "toukii/goutils:dev@1eb9",
+			User:    "toukii",
+			Repo:    "goutils",
+			Name:    "goutils",
+			Branch:  "dev",
+			Commit:  "1eb9",
+			Version: "",
+			Exclude: make(map[string]bool),
+		},
+	}
+
+	got := ParseRepo(args[0])
+
+	if !reflect.DeepEqual(exp[0], got) {
+		t.Error(got, exp[0])
 	}
 
 	for _, it := range args {
@@ -53,5 +74,21 @@ func TestBaseGithub(t *testing.T) {
 
 	for _, it := range args {
 		fmt.Printf("%s, %s\n", it, baseGithubRepo(it))
+	}
+}
+
+func TestGopkg(t *testing.T) {
+	args := []string{
+		"/hh/yaml.v1",
+		"/hh/yaml.v1/ab/c",
+		"/yaml.v1",
+		"/yaml.v1/ab/c",
+	}
+
+	for _, it := range args {
+		user := gopkgUserRegx.FindStringSubmatch(it)
+		repo := gopkgRepoRegx.FindStringSubmatch(it)
+		version := gopkgVersionRegx.FindStringSubmatch(it)
+		fmt.Printf("%s \nuser:%+v \n repo:%+v \n version:%+v \n", it, user, repo, version)
 	}
 }
