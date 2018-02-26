@@ -58,8 +58,6 @@ func InitExcute(args []string) error {
 	for _, it := range gopkg.NoStdDepOKPkgs {
 		if v, ex := dep[it]; v && ex {
 			fmt.Fprintln(mwr, "\""+it+"\" ", ParseRepo(it).Tag())
-			// } else {
-			// 	fmt.Fprintln(mwr, "\""+it+"\" ", "missing")
 		}
 	}
 	for _, it := range gopkg.NoStdDepErrPkgs {
@@ -69,9 +67,7 @@ func InitExcute(args []string) error {
 			fmt.Fprintln(mwr, "\""+it.PkgName+"\" ", "missing")
 		}
 	}
-	// fmt.Println(gopkg.Imports)
-	// fmt.Println(gopkg.NoStdDepOKPkgs)
-	// fmt.Println(gopkg.NoStdDepErrPkgs)
+
 	fmt.Fprintln(mwr, ")")
 
 	return nil
