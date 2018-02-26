@@ -13,14 +13,16 @@ go get -u github.com/toukii/vo/vo
 __vo user/repo[:branch][@commit]__
 
 
+__`vo toukii/vo`__
+__`vo toukii/vo:dev`__
+__`vo toukii/vo:master`__
+__`vo toukii/vo@d1a0e830b03ff75f9578e8ab88ee75958f88cde6`__
+
+
 ```
-vo toukii/vo
 "github.com/toukii/vo" v0.0.1
-vo toukii/vo:dev
 "github.com/toukii/vo" v0.0.0-20180224151534-5f08cd478e56                                                                             
-vo toukii/vo:master
 "github.com/toukii/vo" v0.0.0-20180224151534-5f08cd478e56                                                                             
-vo toukii/vo@d1a0e830b03ff75f9578e8ab88ee75958f88cde6
 "github.com/toukii/vo" v0.0.0-20180223133159-d1a0e830b03f
 ```
 
