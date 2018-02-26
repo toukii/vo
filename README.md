@@ -14,9 +14,13 @@ __vo user/repo[:branch][@commit]__
 
 
 __`vo toukii/vo`__
+
 __`vo toukii/vo:dev`__
+
 __`vo toukii/vo:master`__
+
 __`vo toukii/vo@d1a0e830b03ff75f9578e8ab88ee75958f88cde6`__
+
 
 
 ```
