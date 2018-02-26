@@ -31,6 +31,7 @@ func TestRepo(t *testing.T) {
 		"toukii/goutils:",
 		"toukii/goutils@",
 		"toukii/goutils:@",
+		"everfore/exc/walkexc/pkg",
 	}
 
 	for _, it := range args {
@@ -39,5 +40,17 @@ func TestRepo(t *testing.T) {
 		branch := branchRegx.FindStringSubmatch(it)
 		commitSha := commitShaRegx.FindStringSubmatch(it)
 		fmt.Printf("%s \n  user:%+v\n  repo:%+v\n  branch:%+v\n  commit:%+v\n", it, user, repo, branch, commitSha)
+	}
+}
+
+func TestBaseGithub(t *testing.T) {
+	args := []string{
+		"github.com/toukii/vo",
+		"github.com/toukii/vo/vo",
+		"github.com/toukii",
+	}
+
+	for _, it := range args {
+		fmt.Printf("%s, %s\n", it, baseGithubRepo(it))
 	}
 }

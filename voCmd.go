@@ -23,7 +23,7 @@ vo toukii/goutils:dev -e v0.1.1v0.1.0v0.0.1v0.1`,
 		},
 	}
 
-	userRegx      = regexp.MustCompile("(\\S+)/")
+	userRegx      = regexp.MustCompile("(\\S+?)/")
 	repoRegx      = regexp.MustCompile("/(\\S+?)(:|@|$)") // ? 非贪婪
 	branchRegx    = regexp.MustCompile(":(\\S+?)(@|$)")
 	commitShaRegx = regexp.MustCompile("@(\\S+)")
@@ -31,11 +31,17 @@ vo toukii/goutils:dev -e v0.1.1v0.1.0v0.0.1v0.1`,
 
 func init() {
 	Command.PersistentFlags().StringP("exclude", "e", "", "exclude")
+	Command.PersistentFlags().BoolP("init", "i", false, "init")
 	viper.BindPFlag("exclude", Command.PersistentFlags().Lookup("exclude"))
+	viper.BindPFlag("init", Command.PersistentFlags().Lookup("init"))
+
+	if TOKEN == "" {
+		panic("access_token is missing.")
+	}
 }
 
 func ParseRepo(repoStr string) *Repo {
-
+	repoStr = strings.TrimPrefix(repoStr, "github.com/")
 	user := userRegx.FindStringSubmatch(repoStr)
 	repo := repoRegx.FindStringSubmatch(repoStr)
 	branch := branchRegx.FindStringSubmatch(repoStr)
@@ -67,12 +73,19 @@ func ParseRepo(repoStr string) *Repo {
 }
 
 func Excute(args []string) error {
-	if len(args) < 1 {
-		return fmt.Errorf("repo is required.")
+	if viper.GetBool("init") {
+		return InitExcute(args)
 	}
-	repoStr := args[0]
+
+	var repoStr string
+	if len(args) > 0 {
+		if args[0] == "init" {
+			return InitExcute(args)
+		}
+		repoStr = args[0]
+	}
 	if !strings.Contains(repoStr, "/") {
-		tips := "user/repo[:branch][@commit]  > $"
+		tips := "#input:# user/repo[:branch][@commit]  $"
 		fmt.Print(tips)
 		fmt.Scanf("%s", &repoStr)
 	}

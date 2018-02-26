@@ -1,0 +1,35 @@
+module "github.com/toukii/vo/vo"
+
+require (
+	"github.com/hashicorp/hcl/json/parser" v0.0.0-20170505105837-392dba7d905e
+	"github.com/mitchellh/mapstructure" v0.0.0-20170522200023-d0303fe80992
+	"github.com/spf13/cobra" v0.0.1
+	"github.com/astaxie/beego/httplib" v0.0.0-20160922231845-2d87d4feafee
+	"github.com/fsnotify/fsnotify" v1.4.7
+	"github.com/hashicorp/hcl" v0.0.0-20170505105837-392dba7d905e
+	"github.com/hashicorp/hcl/hcl/token" v0.0.0-20170505105837-392dba7d905e
+	"github.com/pelletier/go-buffruneio" v0.2.0
+	"github.com/spf13/pflag" v1.0.0
+	"github.com/everfore/exc" v0.0.0-20180201140233-45314dca7f0f
+	"github.com/hashicorp/hcl/hcl/ast" v0.0.0-20170505105837-392dba7d905e
+	"github.com/hashicorp/hcl/hcl/scanner" v0.0.0-20170505105837-392dba7d905e
+	"github.com/spf13/viper" v1.0.0
+	"gopkg.in/yaml.v2" v1.1.1-gopkgin-v2.1.1
+	"github.com/everfore/exc/walkexc" v0.0.0-20180201220233-45314dca7f0f
+	"github.com/fatih/color" v1.6.0
+	"github.com/hashicorp/hcl/hcl/strconv" v0.0.0-20170505105837-392dba7d905e
+	"github.com/hashicorp/hcl/json/token" v0.0.0-20170505105837-392dba7d905e
+	"github.com/spf13/afero" v1.0.2
+	"github.com/hashicorp/hcl/json/scanner" v0.0.0-20170505105837-392dba7d905e
+	"github.com/toukii/goutils" v0.1.1
+	"github.com/hashicorp/hcl/hcl/parser" v0.0.0-20170505105837-392dba7d905e
+	"github.com/magiconair/properties" v1.7.6
+	"github.com/pelletier/go-toml" v1.1.0
+	"github.com/toukii/pull/command" v0.0.0-20171230003049-1375e3512a18
+	"github.com/toukii/vo" v0.0.1
+	"github.com/everfore/exc/walkexc/pkg" v0.0.0-20180201220233-45314dca7f0f
+	"github.com/spf13/afero/mem" v0.0.0-20170217174146-9be650865eab
+	"github.com/spf13/cast" v1.2.0
+	"github.com/spf13/jwalterweatherman" v0.0.0-20170523113943-0efa5202c046
+	"github.com/toukii/jsnm" v0.0.0-20180224181733-38735b07ca23
+)

@@ -3,6 +3,7 @@ package vo
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/httplib"
@@ -23,11 +24,13 @@ var (
 	commitRegx = regexp.MustCompile("commit\\ (\\S{12})")
 	dateRegx   = regexp.MustCompile(`Date\:\ \ \ ([\S\ ]+)`)
 
-	tagFmtUrl        = "https://api.github.com/repos/%s/%s/tags"
-	commitFmtUrl     = "https://api.github.com/repos/%s/%s/commits/%s"
+	tagFmtUrl        = "https://api.github.com/repos/%s/%s/tags?access_token=%s"
+	commitFmtUrl     = "https://api.github.com/repos/%s/%s/commits/%s?access_token=%s"
 	branchLogdateFmt = "Mon Jan 2 15:04:05 2006 -0700"
 	branchApidateFmt = "2006-01-02T15:04:05Z"
-	tagFmt           = `"github.com/%s/%s" %s`
+	tagFmt           = "\"github.com/%s/%s\" %s"
+
+	TOKEN = ""
 )
 
 func (r *Repo) Require() string {
@@ -52,7 +55,10 @@ func (r *Repo) Tag() string {
 	}
 	if r.Branch == "" {
 		tag, err = r.LatestTag()
-		r.Branch = "master"
+		if tag == "" {
+			r.Branch = "master"
+			tag, err = r.LocalLatestBranchCommit()
+		}
 	} else {
 		tag, err = r.LocalLatestBranchCommit()
 	}
@@ -63,8 +69,8 @@ func (r *Repo) Tag() string {
 }
 
 func (r *Repo) LatestTag() (string, error) {
-	tags_url := fmt.Sprintf(tagFmtUrl, r.User, r.Name)
-	bs, err := httplib.Get(tags_url).Bytes()
+	req := httplib.NewBeegoRequest(fmt.Sprintf(tagFmtUrl, r.User, r.Name, TOKEN), "GET")
+	bs, err := req.Bytes()
 	if err != nil {
 		return "", err
 	}
@@ -92,6 +98,9 @@ func (r *Repo) LatestTag() (string, error) {
 }
 
 func (r *Repo) LocalLatestBranchCommit() (string, error) {
+	if strings.Contains(r.User, "golang.org") || strings.Contains(r.User, "gopkg.in") {
+		return "", fmt.Errorf("be not supported.")
+	}
 	bs, err := exc.NewCMD(fmt.Sprintf("git log %s -1", r.Branch)).Env("GOPATH").Cd("src/github.com/").Cd(r.User).Cd(r.Name).Do()
 	if err != nil {
 		fmt.Printf("%s,%+v\n", bs, err)
@@ -118,7 +127,8 @@ func (r *Repo) LocalLatestBranchCommit() (string, error) {
 }
 
 func (r *Repo) CommitTag() (string, error) {
-	bs, err := httplib.Get(fmt.Sprintf(commitFmtUrl, r.User, r.Name, r.Commit)).Bytes()
+	req := httplib.NewBeegoRequest(fmt.Sprintf(commitFmtUrl, r.User, r.Name, r.Commit, TOKEN), "GET")
+	bs, err := req.Bytes()
 	if err != nil {
 		return "", err
 	}
