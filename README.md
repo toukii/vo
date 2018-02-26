@@ -8,6 +8,11 @@ vgo 产生的go.mod文件中，require的项目版本
 go get -u github.com/toukii/vo/vo
 ```
 
+## config
+
+[config github access_token](https://github.com/settings/tokens)
+
+
 ## usage
 
 __vo user/repo[:branch][@commit]__
