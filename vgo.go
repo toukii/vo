@@ -15,6 +15,7 @@ import (
 type Repo struct {
 	User    string
 	Name    string // repo name
+	Repo    string
 	Branch  string
 	Commit  string
 	Exclude map[string]bool
@@ -50,17 +51,27 @@ func (r *Repo) Tag() string {
 		if err == nil {
 			return tag
 		} else {
+			fmt.Println(err)
 			return ""
 		}
 	}
 	if r.Branch == "" {
 		tag, err = r.LatestTag()
+		if err != nil {
+			fmt.Println(err)
+		}
 		if tag == "" {
 			r.Branch = "master"
 			tag, err = r.LocalLatestBranchCommit()
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	} else {
 		tag, err = r.LocalLatestBranchCommit()
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 	if tag == "" {
 		return "latest"
@@ -69,13 +80,16 @@ func (r *Repo) Tag() string {
 }
 
 func (r *Repo) LatestTag() (string, error) {
-	req := httplib.NewBeegoRequest(fmt.Sprintf(tagFmtUrl, r.User, r.Name, TOKEN), "GET")
+	req := httplib.NewBeegoRequest(fmt.Sprintf(tagFmtUrl, r.User, r.Repo, TOKEN), "GET")
 	bs, err := req.Bytes()
 	if err != nil {
 		return "", err
 	}
 	if len(bs) <= 0 {
 		return "", fmt.Errorf("response is nil.")
+	}
+	if strings.Contains(goutils.ToString(bs), `"message":`) {
+		return "", fmt.Errorf("%s", bs)
 	}
 	tag := ""
 	jsnm.BytesFmt(bs).Range(func(i int, ji *jsnm.Jsnm) bool {
@@ -101,7 +115,7 @@ func (r *Repo) LocalLatestBranchCommit() (string, error) {
 	if strings.Contains(r.User, "golang.org") || strings.Contains(r.User, "gopkg.in") {
 		return "", fmt.Errorf("be not supported.")
 	}
-	bs, err := exc.NewCMD(fmt.Sprintf("git log %s -1", r.Branch)).Env("GOPATH").Cd("src/github.com/").Cd(r.User).Cd(r.Name).Do()
+	bs, err := exc.NewCMD(fmt.Sprintf("git log %s -1", r.Branch)).Env("GOPATH").Cd("src/github.com/").Cd(r.User).Cd(r.Repo).Do()
 	if err != nil {
 		fmt.Printf("%s,%+v\n", bs, err)
 		return "", err
@@ -127,13 +141,16 @@ func (r *Repo) LocalLatestBranchCommit() (string, error) {
 }
 
 func (r *Repo) CommitTag() (string, error) {
-	req := httplib.NewBeegoRequest(fmt.Sprintf(commitFmtUrl, r.User, r.Name, r.Commit, TOKEN), "GET")
+	req := httplib.NewBeegoRequest(fmt.Sprintf(commitFmtUrl, r.User, r.Repo, r.Commit, TOKEN), "GET")
 	bs, err := req.Bytes()
 	if err != nil {
 		return "", err
 	}
 	if len(bs) <= 0 {
 		return "", fmt.Errorf("response is nil.")
+	}
+	if strings.Contains(goutils.ToString(bs), `"message":`) {
+		return "", fmt.Errorf("%s", bs)
 	}
 	js := jsnm.BytesFmt(bs)
 	cur := js.Get("sha").RawData().String()

@@ -32,6 +32,7 @@ func TestRepo(t *testing.T) {
 		"toukii/goutils@",
 		"toukii/goutils:@",
 		"everfore/exc/walkexc/pkg",
+		"toukii/vo/vo",
 	}
 
 	for _, it := range args {

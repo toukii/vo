@@ -56,9 +56,19 @@ func ParseRepo(repoStr string) *Repo {
 	r := &Repo{
 		User:    user[1],
 		Name:    repo[1],
+		Repo:    repo[1],
 		Branch:  branch[1],
 		Commit:  commitSha[1],
 		Exclude: make(map[string]bool),
+	}
+	if strings.Contains(r.Name, "/") {
+		idx := strings.IndexFunc(r.Name, func(r rune) bool {
+			if r == rune("/"[0]) {
+				return true
+			}
+			return false
+		})
+		r.Repo = r.Name[:idx]
 	}
 
 	exclude := viper.GetString("exclude")
