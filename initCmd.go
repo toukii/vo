@@ -55,8 +55,19 @@ func InitExcute(args []string) error {
 	}
 	filterRepo(dep)
 
-	for k, _ := range dep {
-		fmt.Fprintln(mwr, "\""+k+"\" ", ParseRepo(k).Tag())
+	for _, it := range gopkg.NoStdDepOKPkgs {
+		if v, ex := dep[it]; v && ex {
+			fmt.Fprintln(mwr, "\""+it+"\" ", ParseRepo(it).Tag())
+			// } else {
+			// 	fmt.Fprintln(mwr, "\""+it+"\" ", "missing")
+		}
+	}
+	for _, it := range gopkg.NoStdDepErrPkgs {
+		if v, ex := dep[it.PkgName]; v && ex {
+			fmt.Fprintln(mwr, "\""+it.PkgName+"\" ", ParseRepo(it.PkgName).Tag())
+		} else {
+			fmt.Fprintln(mwr, "\""+it.PkgName+"\" ", "missing")
+		}
 	}
 	// fmt.Println(gopkg.Imports)
 	// fmt.Println(gopkg.NoStdDepOKPkgs)
