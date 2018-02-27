@@ -41,7 +41,11 @@ var (
 )
 
 func (r *Repo) Require() string {
-	return fmt.Sprintf(tagFmt, r.Name, r.Tag())
+	repo := r.Name
+	if !strings.HasPrefix(repo, "gopkg.in") && !strings.HasPrefix(repo, "golang.org") {
+		repo = "github.com/" + repo
+	}
+	return fmt.Sprintf(tagFmt, repo, r.Tag())
 }
 
 /*

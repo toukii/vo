@@ -2,9 +2,9 @@ module "github.com/toukii/vo"
 
 require (
 "github.com/astaxie/beego/httplib"  v1.9.2
-"github.com/everfore/exc"  vgo.0.1
-"github.com/everfore/exc/walkexc"  vgo.0.1
-"github.com/everfore/exc/walkexc/pkg"  vgo.0.1
+"github.com/everfore/exc"  v0.0.1
+"github.com/everfore/exc/walkexc"  v0.0.1
+"github.com/everfore/exc/walkexc/pkg"  v0.0.1
 "github.com/fatih/color"  v1.6.0
 "github.com/fsnotify/fsnotify"  v1.4.7
 "github.com/hashicorp/hcl"  v0.0.0-20170505105837-392dba7d905e
